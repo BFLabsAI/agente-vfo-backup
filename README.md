@@ -1,10 +1,12 @@
-# Agente VFO — "Vanessa"
+# Agente VFO — Backup
 
 Agente de atendimento e vendas por WhatsApp. Recebe as mensagens dos leads, conversa usando
 inteligência artificial, envia conteúdos e links de pagamento, e faz o acompanhamento automático
 de quem não responde.
 
-Construído pela [BF Labs](https://bflabs.com.br) para o cliente VFO.
+Backup do agente construído pela [BF Labs](https://bflabs.com.br) para o cliente VFO. Este repositório
+reúne o código de produção completo, incluindo o necessário para rodar as duas instâncias que
+operavam em paralelo.
 
 **Stack:** Python 3.11 · [Agno](https://github.com/agno-agi/agno) · FastAPI · SQLite ·
 DataCrazy (gateway de WhatsApp) · provedor de LLM compatível com a API da OpenAI.
@@ -60,10 +62,11 @@ Cada instância expõe, sob seu próprio prefixo (`/vfo`, `/vfo-2`, …):
 | `app/` | Aplicação — recebimento de mensagens, orquestração do agente, agendador de follow-up |
 | `prompts/vanessa.py` | Instruções que definem personalidade e roteiro do agente |
 | `tools/vanessa.py` | Ferramentas disponíveis ao agente (link de pagamento, envio de conteúdo etc.) |
-| `instances/<nome>/` | Configuração e banco de cada instância |
+| `instances/<nome>/` | Configuração e banco de cada instância (duas no ambiente original) |
+| `config/` | Mapa de webhooks de automação do CRM (exemplo versionado) |
 | `migrations/` | Schema do banco em SQL versionado |
 | `migrate.py` | Aplicador de migrations |
-| `deploy/` | Units systemd de exemplo |
+| `deploy/` | Arquivos de serviço systemd das duas instâncias |
 | `documents/` | Documentação do projeto |
 | `plano-melhorias/` | Planos de evolução |
 | `data/` | Bibliotecas de conteúdo: objeções, templates de follow-up, sequências |
@@ -121,16 +124,50 @@ cp instances/.env.example instances/vanessa-1/.env
 
 ### 3. Webhooks de automação do CRM
 
-As URLs de gatilho dos fluxos do CRM são específicas da conta e não são versionadas. Copie o
-exemplo e preencha:
+Parte das mensagens não sai pelo agente de IA: são **fluxos prontos, montados no painel do
+DataCrazy** (áudio de abertura, respostas a objeções recorrentes, sequência de follow-up,
+mensagem de pós-pagamento). O agente decide *quando* disparar cada um e chama o fluxo por
+webhook — o conteúdo em si vive no CRM, não no código.
+
+Cada fluxo tem uma URL de gatilho própria, específica da sua conta. **Essas URLs não são
+versionadas** (quem tem a URL consegue disparar a automação), então você precisa gerá-las e
+preenchê-las:
 
 ```bash
 cp config/datacrazy_webhooks.example.json config/datacrazy_webhooks.json
 ```
 
-O arquivo mapeia cada `instance_id` do gateway para o seu conjunto de webhooks, com as 28 chaves
-de automação usadas pelo agente. Sem ele, o sistema sobe normalmente e registra um aviso — apenas
-os disparos por webhook ficam inativos.
+Depois, para cada uma das **28 automações**, abra o fluxo correspondente no painel do DataCrazy,
+gere a URL de gatilho por webhook e cole na chave. O arquivo já vem com todas as chaves listadas
+e um `_leia_me` com o passo a passo.
+
+Estrutura — um bloco por instância, indexado pelo `DATACRAZY_INSTANCE_ID`:
+
+```json
+{
+  "instancias": {
+    "68a1b2c3d4e5f6a7b8c9d0e1": {
+      "automacao_1": "https://api.datacrazy.io/v1/crm/api/crm/flow/…",
+      "pergunta_experiencia": "",
+      "pos_pagamento": "https://api.datacrazy.io/v1/crm/api/crm/flow/…"
+    }
+  }
+}
+```
+
+As 28 chaves se dividem em três grupos: **abertura** (`automacao_1`, `automacao_2`,
+`pergunta_experiencia`), **objeções** (`ja_fez_mentoria`, `precisa_computador`, `tem_medo`,
+`comecando_do_zero`, `como_sei_seguro` e outras) e **follow-up e pós-venda**
+(`bf_labs_follow1_pt3`, `bf_labs_follow_janela_24h`, `pos_pagamento` etc.).
+
+Ao disparar, o agente envia `lead_id`, `conversation_id`, `contactId` e `phone` — o fluxo do CRM
+usa esses campos para localizar o contato e enviar a mensagem.
+
+**Comportamento sem configuração:** o sistema sobe normalmente e registra um aviso; só os
+disparos por webhook ficam inativos. Se uma chave estiver vazia, o agente tenta a URL equivalente
+na primeira instância configurada; não achando, registra erro e segue operando. Toda a conversa
+com IA, o agendamento de follow-up e a geração de link de pagamento funcionam independentemente
+deste arquivo.
 
 ### 4. Banco de dados
 
@@ -142,14 +179,37 @@ Seguro sobre bancos com dados: cria apenas o que falta e nunca apaga registros. 
 aplicada uma única vez, com controle na tabela `schema_migrations`. Para conferir sem alterar:
 `--check`.
 
-### 5. Subir
+### 5. Subir as instâncias
+
+O agente rodava com **dois números de WhatsApp em paralelo** — dois processos do mesmo código,
+cada um com seu `.env`, seu banco e sua porta:
 
 ```bash
+# instância 1 — número principal
 .venv/bin/uvicorn app.whatsapp_api:app --host 0.0.0.0 --port 8004
+
+# instância 2 — segundo número (outro terminal)
+.venv/bin/uvicorn app.whatsapp_api:app --host 0.0.0.0 --port 8005
 ```
 
-Em produção, use os units de `deploy/` como base. Aponte o webhook do gateway para
-`https://<seu-dominio>/vfo/webhooks/datacrazy`.
+Cada processo lê o `.env` da sua instância, que define `PORT`, `SESSION_DB_PATH` e o
+`DATACRAZY_INSTANCE_ID` do número correspondente. Os bancos são separados: uma conversa da
+instância 1 não enxerga a da instância 2.
+
+Para rodar **apenas um número**, suba só a primeira e ignore `instances/vanessa-2/`.
+
+Em produção, `deploy/` traz os dois arquivos de serviço systemd usados originalmente
+(`vfo-agent.service` e `vfo-agent-2.service`), com reinício automático em caso de queda:
+
+```bash
+sudo cp deploy/vfo-agent*.service /etc/systemd/system/   # ajuste os caminhos antes
+sudo systemctl daemon-reload
+sudo systemctl enable --now vfo-agent vfo-agent-2
+```
+
+Por fim, aponte o webhook de cada número no painel do DataCrazy para o endereço público
+correspondente: `https://<seu-dominio>/vfo/webhooks/datacrazy` para a instância 1 e
+`https://<seu-dominio>/vfo-2/webhooks/datacrazy` para a instância 2.
 
 ---
 

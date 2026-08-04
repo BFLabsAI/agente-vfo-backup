@@ -124,9 +124,15 @@ class DataCrazyAutomationClient:
             fallback = next(iter(self._instance_map.values()), {})
             url = fallback.get(automation_key)
             if url:
-                logger.warning("trigger_automation | key=%s empty in v2, falling back to v1", automation_key)
+                logger.warning(
+                    "trigger_automation | key=%s sem URL para instance_id=%s, "
+                    "usando a primeira instância configurada como fallback",
+                    automation_key, self._instance_id)
         if not url:
-            raise ValueError(f"Automation key '{automation_key}' not found")
+            raise ValueError(
+                f"Automação '{automation_key}' sem URL configurada. "
+                f"Defina-a em {self._WEBHOOKS_FILE.name} para o instance_id '{self._instance_id}'."
+            )
 
         # Clean IDs — DataCrazy sometimes sends lead_id with extra quotes/braces like ""{uuid}"
         clean_lead_id = external_id.strip().strip('"').strip("'").strip('{').strip('}').strip()

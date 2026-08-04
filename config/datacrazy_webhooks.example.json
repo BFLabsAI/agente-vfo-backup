@@ -1,5 +1,19 @@
 {
-  "_comentario": "Preencha com as URLs de webhook de automacao do seu CRM. Este arquivo e um exemplo; copie para datacrazy_webhooks.json (fora do versionamento).",
+  "_leia_me": [
+    "Mapa de automacoes do CRM: para cada instancia do gateway, a URL de webhook",
+    "que dispara cada fluxo.",
+    "",
+    "COMO PREENCHER:",
+    "1. Copie este arquivo para config/datacrazy_webhooks.json (nao versionado).",
+    "2. Troque <instance-id-1> pelo valor de DATACRAZY_INSTANCE_ID da instancia.",
+    "3. No painel do DataCrazy, abra cada fluxo de automacao, gere/copie a URL de",
+    "   gatilho por webhook e cole na chave correspondente.",
+    "4. Repita para a segunda instancia. Rode apenas uma? Deixe so um bloco.",
+    "",
+    "Chaves vazias sao ignoradas: o agente busca a URL na primeira instancia",
+    "configurada como fallback e, se nao achar, registra erro e segue operando.",
+    "As demais funcoes do agente nao dependem deste arquivo."
+  ],
   "instancias": {
     "<instance-id-1>": {
       "automacao_1": "",
