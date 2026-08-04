@@ -1,0 +1,19 @@
+[
+  {"index": 0, "type": "text", "content": "Entendii, {nome}"},
+  {"index": 1, "type": "text", "content": "Vamos lá"},
+  {"index": 2, "type": "text", "content": "Antesssss de mais nada, já quero te adiantar que, aqui não é joguinho de aposta, piramide, capacitação de vender capacitação, dinheiro facil ou esses golpes que tem por ai que eu tenho pavor kkkk se vc está procurando isso, não é aqui, tá?"},
+  {"index": 3, "type": "text", "content": "Aqui vou te mostrar a ter algo solido, que se você aplicar, se dedicar mesmo que uma horinha livre do seu dia você consegue mudar de vida ou até mesmo ter uma renda boa com a internet todos os meses! isso que vou te ensinar e mostrar, assim como eu há mais de 3 anos! E como meus alunos que consegiram sair do clt, pais que trabalham de casa com os filhos, pessoas que conseguiram quitar dividas de faculdade e ter uma vida melhor, e mais tranquila, realizar grandes sonhos, casa, carro! E agora você tambem vai ter essa oportunidade de iniciar HOJE"},
+  {"index": 4, "type": "text", "content": "Boraaaaaa lá"},
+  {"index": 5, "type": "automation", "automation_key": "audio_batch_1", "description": "áudios 1, 2 e 3", "delay_seconds": 15},
+  {"index": 6, "type": "text", "content": "Agora sim, vamos lá! Vou gravar alguns áudios porque assim tudo fica mais fácil de entender. E se você for uma pessoa ansiosa como eu, pode ouvir no 2x sem problema 😅"},
+  {"index": 7, "type": "automation", "automation_key": "audio_batch_2", "description": "áudios 4, 5 e 6", "delay_seconds": 15},
+  {"index": 8, "type": "text", "content": "Vou te mandar aqui um video de um saque de quase 50 mil reais e de como é simples transferir meus resultados tudo direto pra minha conta bancária. 👇🏻💸"},
+  {"index": 9, "type": "automation", "automation_key": "video_1", "description": "vídeo saque R$50 mil", "delay_seconds": 15},
+  {"index": 10, "type": "text", "content": "Apenas no Mercado Livre, foram mais de R$14 mil em ganhos no último mês. Hoje trabalho com várias plataformas que comercializam produtos digitais e físicos como Braip, Shopee, Mercado Livre e outras"},
+  {"index": 11, "type": "automation", "automation_key": "video_2", "description": "vídeo podcast Kiwify", "delay_seconds": 15},
+  {"index": 12, "type": "text", "content": "'Van, mas isso realmente funciona?' Simmm, eu fiz mais de 2 milhões e já ajudei varias pessoas comuns e também te ajudarei! E tanto que fui convidada pra gravar um podcast da kiwify por ter chegado nesse marco, te mandei um pedacinho, mas me avisa se voce quiser que eu te envie depois! ☺️✨"},
+  {"index": 13, "type": "automation", "automation_key": "provas_sociais", "description": "1 vídeo + 3 imagens de prova social", "delay_seconds": 15},
+  {"index": 14, "type": "text", "content": "Eu falo mesmo kkkk… Se for pra explicar pela metade, eu nem começo 😂"},
+  {"index": 15, "type": "text", "content": "já foi bastante coisa até aqui né kkkk vou deixar você respirar um pouco, até aqui você tem alguma dúvida? A maioria do pessoal que entra para o meu time faz entre 3 a 6 mil reais no primeiro mês, esse valor já te ajudaria? É isso que vc procura?"},
+  {"index": 16, "type": "text", "content": "Pode me mandar áudio também se quiser viu, eu amo conversar. Só não me deixa no vácuo 😂"}
+]

@@ -1,0 +1,85 @@
+# ============================================================
+# REPOSITÓRIO PÚBLICO
+# Nada que identifique credencial, endpoint ou dado de lead
+# pode ser versionado aqui.
+# ============================================================
+
+# --- Credenciais e configuração de ambiente ---------------
+.env
+.env.*
+!.env.example
+*.env
+!*.env.example
+instances/*/.env
+instances/*/.env.*
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+
+# --- Bancos de dados e dados de lead ----------------------
+# Contêm conversas reais: nome, telefone e teor das mensagens.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+instances/*/data/*
+!instances/*/data/.gitkeep
+tmp/
+backups/
+exports/
+*.csv
+
+# --- Logs -------------------------------------------------
+*.log
+logs/
+
+# --- Ambiente virtual -------------------------------------
+.venv/
+venv/
+env/
+ENV/
+
+# --- Artefatos de build Python ----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Editores e sistema operacional -----------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Webhooks de automação do CRM (específicos da conta) ---
+config/datacrazy_webhooks.json

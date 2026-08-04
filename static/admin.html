@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vanessa — VFO Monitor</title>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base:    '#0d1117',
+            surface: '#161b22',
+            card:    '#21262d',
+            border:  '#30363d',
+          },
+        },
+      },
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+    .chat-bubble-user   { background: #1f6feb; color: #fff; border-radius: 18px 18px 4px 18px; }
+    .chat-bubble-agent  { background: #21262d; color: #c9d1d9; border-radius: 18px 18px 18px 4px; }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="flex flex-col h-full" x-data="monitor()" x-init="init()">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between px-6 py-3 border-b border-border bg-surface">
+    <div class="flex items-center gap-3">
+      <div class="w-3 h-3 rounded-full bg-emerald-400 pulse-dot"></div>
+      <h1 class="text-lg font-semibold text-white">Vanessa — VFO Monitor</h1>
+    </div>
+    <div class="flex items-center gap-4 text-sm text-gray-400">
+      <span x-text="stats.total_sessions + ' sessões'"></span>
+      <span x-text="stats.total_tokens.toLocaleString() + ' tokens'"></span>
+      <span x-text="'$' + stats.total_cost.toFixed(4)"></span>
+      <button @click="refresh()" class="px-3 py-1 bg-card rounded border border-border hover:border-gray-500 transition">
+        ↻ Atualizar
+      </button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Sidebar — Sessions -->
+    <aside class="w-80 border-r border-border bg-surface overflow-y-auto flex-shrink-0">
+      <div class="p-3">
+        <input type="text" placeholder="Buscar lead..." x-model="search"
+               class="w-full px-3 py-2 bg-base border border-border rounded text-sm focus:outline-none focus:border-blue-500" />
+      </div>
+      <template x-for="s in filteredSessions" :key="s.session_id">
+        <div @click="selectSession(s)"
+             :class="selected?.session_id === s.session_id ? 'bg-card border-l-2 border-l-blue-500' : 'border-l-2 border-l-transparent'"
+             class="px-4 py-3 cursor-pointer hover:bg-card transition border-b border-border">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-white text-sm" x-text="s.lead_name || 'Sem nome'"></span>
+            <span class="text-xs px-2 py-0.5 rounded-full"
+                  :class="s.is_purchased ? 'bg-emerald-900 text-emerald-300' : s.is_interested ? 'bg-yellow-900 text-yellow-300' : 'bg-gray-700 text-gray-400'"
+                  x-text="s.is_purchased ? 'Comprou' : s.is_interested ? 'Interessado' : 'Novo'"></span>
+          </div>
+          <div class="text-xs text-gray-500 mt-1" x-text="s.from_number"></div>
+          <div class="text-xs text-gray-600 mt-1" x-text="formatDate(s.updated_at)"></div>
+        </div>
+      </template>
+      <div x-show="filteredSessions.length === 0" class="p-4 text-center text-gray-500 text-sm">
+        Nenhuma sessão encontrada
+      </div>
+    </aside>
+
+    <!-- Main — Chat View -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+      <template x-if="!selected">
+        <div class="flex-1 flex items-center justify-center text-gray-500">
+          <div class="text-center">
+            <div class="text-4xl mb-3">💬</div>
+            <div>Selecione uma sessão para ver a conversa</div>
+          </div>
+        </div>
+      </template>
+
+      <template x-if="selected">
+        <div class="flex flex-col h-full">
+          <!-- Session header -->
+          <div class="px-6 py-3 border-b border-border bg-surface flex items-center justify-between">
+            <div>
+              <div class="font-medium text-white" x-text="selected.lead_name || 'Sem nome'"></div>
+              <div class="text-xs text-gray-500" x-text="selected.from_number + ' · ' + selected.session_id"></div>
+            </div>
+            <div class="text-xs text-gray-400">
+              <span x-text="selected.total_tokens.toLocaleString() + ' tokens'"></span>
+              <span class="ml-2" x-text="'$' + selected.cost?.toFixed(4)"></span>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div class="flex-1 overflow-y-auto p-6 space-y-4" id="chat-scroll">
+            <template x-for="(m, idx) in messages" :key="idx">
+              <div class="space-y-2">
+                <!-- User message -->
+                <div x-show="m.user_message" class="flex justify-end">
+                  <div class="chat-bubble-user px-4 py-2 max-w-[70%] text-sm" x-text="m.user_message"></div>
+                </div>
+                <!-- Agent reply -->
+                <div x-show="m.agent_reply" class="flex justify-start">
+                  <div class="chat-bubble-agent px-4 py-2 max-w-[70%] text-sm whitespace-pre-wrap" x-text="m.agent_reply"></div>
+                </div>
+                <!-- Timestamp -->
+                <div class="text-[10px] text-gray-600 text-center" x-text="formatDate(m.created_at)"></div>
+              </div>
+            </template>
+            <div x-show="messages.length === 0" class="text-center text-gray-500 py-10">
+              Nenhuma mensagem nesta sessão
+            </div>
+          </div>
+        </div>
+      </template>
+    </main>
+
+    <!-- Right — Lead Info -->
+    <aside x-show="selected" class="w-72 border-l border-border bg-surface overflow-y-auto flex-shrink-0 p-4 space-y-4">
+      <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Lead</div>
+        <div class="text-white font-medium" x-text="selected?.lead_name || 'Sem nome'"></div>
+        <div class="text-sm text-gray-400" x-text="selected?.from_number"></div>
+      </div>
+      <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Status</div>
+        <div class="flex gap-2">
+          <span class="text-xs px-2 py-1 rounded"
+                :class="selected?.is_interested ? 'bg-yellow-900 text-yellow-300' : 'bg-gray-700 text-gray-500'"
+                x-text="selected?.is_interested ? 'Interessado' : 'Não interessado'"></span>
+          <span class="text-xs px-2 py-1 rounded"
+                :class="selected?.is_purchased ? 'bg-emerald-900 text-emerald-300' : 'bg-gray-700 text-gray-500'"
+                x-text="selected?.is_purchased ? 'Comprou' : 'Não comprou'"></span>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Métricas</div>
+        <div class="text-sm text-gray-400">
+          <div>Tokens: <span class="text-white" x-text="selected?.total_tokens?.toLocaleString()"></span></div>
+          <div>Custo: <span class="text-white" x-text="'$' + selected?.cost?.toFixed(4)"></span></div>
+          <div>Criado: <span class="text-white" x-text="formatDate(selected?.created_at)"></span></div>
+          <div>Atualizado: <span class="text-white" x-text="formatDate(selected?.updated_at)"></span></div>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs text-gray-500 uppercase tracking-wider mb-2">Sessão</div>
+        <div class="text-xs text-gray-500 break-all" x-text="selected?.session_id"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    function monitor() {
+      return {
+        sessions: [],
+        selected: null,
+        messages: [],
+        search: '',
+        stats: { total_sessions: 0, total_tokens: 0, total_cost: 0, interested: 0, purchased: 0 },
+
+        get filteredSessions() {
+          const q = this.search.toLowerCase();
+          if (!q) return this.sessions;
+          return this.sessions.filter(s =>
+            (s.lead_name || '').toLowerCase().includes(q) ||
+            (s.from_number || '').includes(q) ||
+            (s.session_id || '').toLowerCase().includes(q)
+          );
+        },
+
+        async init() {
+          await this.refresh();
+        },
+
+        async refresh() {
+          const [sessRes, statsRes] = await Promise.all([
+            fetch('/vfo/admin/sessions'),
+            fetch('/vfo/admin/stats'),
+          ]);
+          const sessData = await sessRes.json();
+          const statsData = await statsRes.json();
+          this.sessions = sessData.sessions || [];
+          this.stats = statsData;
+        },
+
+        async selectSession(s) {
+          this.selected = s;
+          this.messages = [];
+          const res = await fetch(`/vfo/admin/sessions/${s.session_id}/messages`);
+          const data = await res.json();
+          this.messages = data.messages || [];
+          this.$nextTick(() => {
+            const el = document.getElementById('chat-scroll');
+            if (el) el.scrollTop = el.scrollHeight;
+          });
+        },
+
+        formatDate(ts) {
+          if (!ts) return '';
+          const d = typeof ts === 'number' ? new Date(ts * 1000) : new Date(ts);
+          return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        },
+      };
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{
+  "flow_1": [
+    {
+      "step": 1,
+      "delay_seconds": 1800,
+      "message": "",
+      "automation": "bf_labs_audio_inicial",
+      "note": "Só envia se automation_1_sent == False"
+    },
+    {
+      "step": 2,
+      "delay_seconds": 3600,
+      "message": "Fiquei na dúvida se você tá começando do zero ou já tem uma noção...me conta rapidinho pra eu te explicar certinho.",
+      "automation": null
+    },
+    {
+      "step": 3,
+      "delay_seconds": 7200,
+      "message": "",
+      "automation": "bf_labs_follow3_pt1"
+    },
+    {
+      "step": 4,
+      "delay_seconds": 18000,
+      "message": "Como estou livre agora, Vou te explicando aqui, e quando você conseguir ver com calma, você me responde ta bem!",
+      "automation": "bf_labs_automacao1",
+      "note": "Só envia automação se automation_1_sent == False"
+    }
+  ],
+  "flow_2": [
+    {
+      "step": 1,
+      "delay_seconds": 1200,
+      "message": "Oieee, Tô quase mandando mensagem pra mim mesma de tanto que fiquei falando sozinha aqui kkkkk",
+      "automation": null
+    },
+    {
+      "step": 2,
+      "delay_seconds": 7200,
+      "message": "",
+      "automation": "bf_labs_follow2_pt2"
+    },
+    {
+      "step": 3,
+      "delay_seconds": 14400,
+      "message": "",
+      "automation": "bf_labs_follow3_pt2"
+    }
+  ],
+  "flow_3": [
+    {
+      "step": 1,
+      "delay_seconds": 1200,
+      "message": "",
+      "automation": "bf_labs_follow1_pt3"
+    },
+    {
+      "step": 2,
+      "delay_seconds": 7200,
+      "message": "",
+      "automation": "bf_labs_follow2_pt3"
+    },
+    {
+      "step": 3,
+      "delay_seconds": 10800,
+      "message": "",
+      "automation": "bf_labs_follow3_pt3",
+      "handle_response": true,
+      "response_price": 299.9,
+      "note": "Se lead responder com interesse após este follow, enviar link de pagamento R$299,90"
+    }
+  ],
+  "janela_24h": [
+    {
+      "step": 1,
+      "delay_seconds": 0,
+      "message": "",
+      "automation": "bf_labs_follow_janela_24h",
+      "note": "Follow-up de janela 24h — enviado 23h após primeiro contato, 1h antes de fechar a janela do WhatsApp. Lead é informada que foi sorteada com bônus + link de pagamento."
+    }
+  ]
+}

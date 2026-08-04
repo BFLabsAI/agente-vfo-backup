@@ -1,0 +1,26 @@
+[
+  {
+    "step": 1,
+    "delay_seconds": 90,
+    "message": "Oi, {nome} 💛 é a Vanessa aqui. Você conseguiu olhar minha mensagem? Ficou alguma duvida?",
+    "automation": null
+  },
+  {
+    "step": 2,
+    "delay_seconds": 120,
+    "message": "Oiii voltei porque sei que muita gente chega aqui com medo de dar errado de novo, e eu entendo de verdade. Então preferi mostrar uma de nossas alunas que é nossos cases de sucesso, e to ansiosa para em breve ser você.",
+    "automation": "follow_up_video_prova_social"
+  },
+  {
+    "step": 3,
+    "delay_seconds": 180,
+    "message": "{nome}. Até aqui eu quis te deixar bem à vontade, mas preciso ser sincera com você: ganhar dinheiro com a internet e mudar sua vida com nosso treinamento ainda faz sentido para você?",
+    "automation": null
+  },
+  {
+    "step": 4,
+    "delay_seconds": 240,
+    "message": "Vou te enviar a história de uma mãe que começou cheia de medo, igual muita gente que fala comigo, e hoje vive só do digital. Eu vou finalizar por aqui pra não ficar insistindo com você, mas queria saber: você vai continuar esperando ou vai dar o passo para mudar de vida?",
+    "automation": "follow_up_foto_historia"
+  }
+]

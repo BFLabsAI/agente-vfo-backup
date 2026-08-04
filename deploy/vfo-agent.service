@@ -1,0 +1,15 @@
+[Unit]
+Description=VFO Agent - Vanessa #1 (DataCrazy)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/caminho/para/vfo
+EnvironmentFile=/caminho/para/vfo/instances/vanessa-1/.env
+ExecStart=/caminho/para/vfo/.venv/bin/uvicorn app.whatsapp_api:app --host 0.0.0.0 --port 8004 --log-level info
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
